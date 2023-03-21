@@ -5,26 +5,11 @@ const API_BASE_URL = "https://api.videosdk.live";
 let videoContainer = document.getElementById("videoContainer");
 let micButton = document.getElementById("micButton");
 let camButton = document.getElementById("camButton");
-let copy_meeting_id = document.getElementById("meetingid");
-let contentRaiseHand = document.getElementById("contentRaiseHand");
-let btnScreenShare = document.getElementById("btnScreenShare");
-let videoScreenShare = document.getElementById("videoScreenShare");
-let btnRaiseHand = document.getElementById("btnRaiseHand");
-// let btnStopPresenting = document.getElementById("btnStopPresenting");
-let btnSend = document.getElementById("btnSend");
-let participantsList = document.getElementById("participantsList");
 let videoCamOff = document.getElementById("main-pg-cam-off");
 let videoCamOn = document.getElementById("main-pg-cam-on");
 
 let micOn = document.getElementById("main-pg-unmute-mic");
 let micOff = document.getElementById("main-pg-mute-mic");
-
-//recording
-let btnStartRecording = document.getElementById("btnStartRecording");
-let btnStopRecording = document.getElementById("btnStopRecording");
-
-//videoPlayback DIV
-let videoPlayback = document.getElementById("videoPlayback");
 
 let meeting = "";
 // Local participants
@@ -148,36 +133,6 @@ async function validateMeeting() {
   }
 }
 
-function addParticipantToList({ id, displayName }) {
-  let participantTemplate = document.createElement("div");
-  participantTemplate.className = "row";
-  participantTemplate.style.padding = "4px";
-  participantTemplate.style.marginTop = "1px";
-  participantTemplate.style.marginLeft = "7px";
-  participantTemplate.style.marginRight = "7px";
-  participantTemplate.style.borderRadius = "3px";
-  participantTemplate.style.border = "1px solid rgb(61, 60, 78)";
-  participantTemplate.style.backgroundColor = "rgb(61, 60, 78)";
-
-  //icon
-  let colIcon = document.createElement("div");
-  colIcon.className = "col-2";
-  colIcon.innerHTML = "Icon";
-  participantTemplate.appendChild(colIcon);
-
-  //name
-  let content = document.createElement("div");
-  colIcon.className = "col-3";
-  colIcon.innerHTML = `${displayName}`;
-  participantTemplate.appendChild(content);
-  // participants.push({ id, displayName });
-
-  console.log(participants);
-
-  participantsList.appendChild(participantTemplate);
-  participantsList.appendChild(document.createElement("br"));
-}
-
 function createLocalParticipant() {
   totalParticipants++;
   localParticipant = createVideoElement(meeting.localParticipant.id);
@@ -234,13 +189,6 @@ async function startMeeting(token, meetingId, name) {
 
   //create Local Participant
   createLocalParticipant();
-
-  //add yourself in participant list
-  if (totalParticipants != 0)
-    addParticipantToList({
-      id: meeting.localParticipant.id,
-      displayName: "You",
-    });
 
   // Setting local participant stream
   meeting.localParticipant.on("stream-enabled", (stream) => {
@@ -408,11 +356,11 @@ async function startMeeting(token, meetingId, name) {
 }
 
 // joinMeeting();
-async function joinMeeting(newMeeting) {
+async function joinMeeting(id, newMeeting) {
   tokenGeneration();
   let joinMeetingName =
-    document.getElementById("joinMeetingName").value || "JSSDK";
-  let meetingId = document.getElementById("joinMeetingId").value || "";
+    'PacoSprings' || "JSSDK";
+  let meetingId = id || "";
   if (!meetingId && !newMeeting) {
     return alert("Please Provide a meetingId");
   }
@@ -424,19 +372,12 @@ async function joinMeeting(newMeeting) {
     joinMeetingFlag = 1;
     createMeetingFlag = 0;
   } else if (!newMeeting) {
-    document.getElementById("joinPage").style.display = "none";
     document.getElementById("home-page").style.display = "none";
     document.getElementById("gridPpage").style.display = "flex";
     toggleControls();
   }
 
-  if (createMeetingFlag == 1) {
-    document.getElementById("joinPage").style.display = "none";
-    document.getElementById("home-page").style.display = "none";
-    document.getElementById("gridPpage").style.display = "flex";
-    toggleControls();
-  } else if (joinMeetingFlag == 1) {
-    document.getElementById("joinPage").style.display = "flex";
+  if (joinMeetingFlag == 1) {
     document.getElementById("home-page").style.display = "none";
     document.getElementById("gridPpage").style.display = "none";
   }
@@ -455,10 +396,8 @@ async function joinMeeting(newMeeting) {
 
   if (!newMeeting) {
     console.log(meetingId);
-    document.getElementById("joinPage").style.display = "none";
     document.getElementById("home-page").style.display = "none";
     document.getElementById("gridPpage").style.display = "flex";
-    document.getElementById("meetingid").value = meetingId;
     startMeeting(token, meetingId, joinMeetingName);
   }
 
@@ -586,42 +525,6 @@ function addDomEvents() {
     meeting.enableWebcam();
   });
 
-  // screen share button event listener
-  btnScreenShare.addEventListener("click", async () => {
-    if (btnScreenShare.style.color == "grey") {
-      meeting.disableScreenShare();
-    } else {
-      meeting.enableScreenShare();
-    }
-  });
-
-  //raise hand event
-  $("#btnRaiseHand").click(function () {
-    let participantId = localParticipant.className;
-    if (participantId.split("-")[1] == meeting.localParticipant.id) {
-      contentRaiseHand.innerHTML = "You Have Raised Your Hand";
-    } else {
-      contentRaiseHand.innerHTML = `<b>${remoteParticipantId}</b> Have Raised Their Hand`;
-    }
-
-    $("#contentRaiseHand").show();
-    setTimeout(function () {
-      $("#contentRaiseHand").hide();
-    }, 2000);
-  });
-
-  //send chat message button
-  btnSend.addEventListener("click", async () => {
-    const message = document.getElementById("txtChat").value;
-    console.log("publish : ", message);
-    document.getElementById("txtChat").value = "";
-    meeting.pubSub
-      .publish("CHAT", message, { persist: true })
-      .then((res) => console.log(`response of publish : ${res}`))
-      .catch((err) => console.log(`error of publish : ${err}`));
-    // meeting.sendChatMessage(JSON.stringify({ type: "chat", message }));
-  });
-
   // //leave Meeting Button
   $("#leaveCall").click(async () => {
     participants = new Map(meeting.participants);
@@ -634,37 +537,6 @@ function addDomEvents() {
   $("#endCall").click(async () => {
     meeting.end();
     window.location.reload();
-  });
-
-  // //startVideo button events [playing VIDEO.MP4]
-  // startVideoBtn.addEventListener("click", async () => {
-  //   meeting.startVideo({ link: "/video.mp4" });
-  // });
-
-  // //end video playback
-  // stopVideoBtn.addEventListener("click", async () => {
-  //   meeting.stopVideo();
-  // });
-  // //resume paused video
-  // resumeVideoBtn.addEventListener("click", async () => {
-  //   meeting.resumeVideo();
-  // });
-  // //pause playing video
-  // pauseVideoBtn.addEventListener("click", async () => {
-  //   meeting.pauseVideo({ currentTime: videoPlayback.currentTime });
-  // });
-  // //seek playing video
-  // seekVideoBtn.addEventListener("click", async () => {
-  //   meeting.seekVideo({ currentTime: 40 });
-  // });
-  // //startRecording
-  btnStartRecording.addEventListener("click", async () => {
-    console.log("btnRecording is clicked");
-    meeting.startRecording();
-  });
-  // //Stop Recording
-  btnStopRecording.addEventListener("click", async () => {
-    meeting.stopRecording();
   });
 }
 
@@ -710,44 +582,6 @@ async function toggleWebCam() {
     document.getElementById("onCamera").style.display = "inline-block";
     webCamEnable = true;
   }
-}
-
-function copyMeetingCode() {
-  copy_meeting_id.select();
-  document.execCommand("copy");
-}
-
-//open participant wrapper
-function openParticipantWrapper() {
-  document.getElementById("participants").style.width = "350px";
-  document.getElementById("gridPpage").style.marginRight = "350px";
-  document.getElementById("ParticipantsCloseBtn").style.visibility = "visible";
-  document.getElementById("totalParticipants").style.visibility = "visible";
-  document.getElementById(
-    "totalParticipants"
-  ).innerHTML = `Participants (${totalParticipants})`;
-}
-
-function closeParticipantWrapper() {
-  document.getElementById("participants").style.width = "0";
-  document.getElementById("gridPpage").style.marginRight = "0";
-  document.getElementById("ParticipantsCloseBtn").style.visibility = "hidden";
-  document.getElementById("totalParticipants").style.visibility = "hidden";
-}
-
-function openChatWrapper() {
-  document.getElementById("chatModule").style.width = "350px";
-  document.getElementById("gridPpage").style.marginRight = "350px";
-  document.getElementById("chatCloseBtn").style.visibility = "visible";
-  document.getElementById("chatHeading").style.visibility = "visible";
-  document.getElementById("btnSend").style.display = "inline-block";
-}
-
-function closeChatWrapper() {
-  document.getElementById("chatModule").style.width = "0";
-  document.getElementById("gridPpage").style.marginRight = "0";
-  document.getElementById("chatCloseBtn").style.visibility = "hidden";
-  document.getElementById("btnSend").style.display = "none";
 }
 
 function toggleControls() {
