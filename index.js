@@ -198,6 +198,7 @@ async function startMeeting(token, meetingId, name) {
       meeting.localParticipant,
       (isLocal = true)
     );
+    console.log('local conectado')
   });
 
   meeting.localParticipant.on("stream-disabled", (stream) => {
@@ -211,25 +212,6 @@ async function startMeeting(token, meetingId, name) {
     }
   });
 
-  meeting.on("meeting-joined", () => {
-    meeting.pubSub.subscribe("CHAT", (data) => {
-      let { message, senderId, senderName, timestamp } = data;
-      const chatBox = document.getElementById("chatArea");
-      const chatTemplate = `
-          <div style="margin-bottom: 10px; ${
-            meeting.localParticipant.id == senderId && "text-align : right"
-          }">
-            <span style="font-size:12px;">${senderName}</span>
-            <div style="margin-top:5px">
-              <span style="background:${
-                meeting.localParticipant.id == senderId ? "grey" : "crimson"
-              };color:white;padding:5px;border-radius:8px">${message}<span>
-            </div>
-          </div>
-          `;
-      chatBox.insertAdjacentHTML("beforeend", chatTemplate);
-    });
-  });
 
   // Other participants
   meeting.on("participant-joined", (participant) => {
@@ -252,7 +234,7 @@ async function startMeeting(token, meetingId, name) {
     videoContainer.appendChild(videoElement);
     console.log("Video Element Appended");
     videoContainer.appendChild(audioElement);
-    addParticipantToList(participant);
+    console.log('guest conectado')
   });
 
   // participants left
@@ -265,90 +247,6 @@ async function startMeeting(token, meetingId, name) {
     aElement.parentNode.removeChild(aElement);
     //remove it from participant list participantId;
     document.getElementById(`p-${participant.id}`).remove();
-  });
-  //chat message event
-  // meeting.on("chat-message", (chatEvent) => {
-  //   const { senderId, text, timestamp, senderName } = chatEvent;
-  //   const parsedText = JSON.parse(text);
-
-  //   if (parsedText?.type == "chat") {
-  //     const chatBox = document.getElementById("chatArea");
-  //     const chatTemplate = `
-  //     <div style="margin-bottom: 10px; ${
-  //       meeting.localParticipant.id == senderId && "text-align : right"
-  //     }">
-  //       <span style="font-size:12px;">${senderName}</span>
-  //       <div style="margin-top:5px">
-  //         <span style="background:${
-  //           meeting.localParticipant.id == senderId ? "grey" : "crimson"
-  //         };color:white;padding:5px;border-radius:8px">${
-  //       parsedText.message
-  //     }<span>
-  //       </div>
-  //     </div>
-  //     `;
-  //     chatBox.insertAdjacentHTML("beforeend", chatTemplate);
-  //   }
-  // });
-
-  // //video state changed
-  // meeting.on("video-state-changed", (videoEvent) => {
-  //   const { status, link, currentTime } = videoEvent;
-
-  //   switch (status) {
-  //     case "started":
-  //       videoPlayback.setAttribute("src", link);
-  //       videoPlayback.play();
-  //       break;
-  //     case "stopped":
-  //       console.log("stopped");
-  //       videoPlayback.removeAttribute("src");
-  //       videoPlayback.pause();
-  //       videoPlayback.load();
-  //       break;
-  //     case "resumed":
-  //       videoPlayback.play();
-  //       break;
-  //     case "paused":
-  //       videoPlayback.currentTime = currentTime;
-  //       videoPlayback.pause();
-  //       break;
-
-  //     case "seeked":
-  //       break;
-
-  //     default:
-  //       break;
-  //   }
-  // });
-
-  //recording events
-  meeting.on("recording-started", () => {
-    console.log("RECORDING STARTED EVENT");
-    btnStartRecording.style.display = "none";
-    btnStopRecording.style.display = "inline-block";
-  });
-  meeting.on("recording-stopped", () => {
-    console.log("RECORDING STOPPED EVENT");
-    btnStartRecording.style.display = "inline-block";
-    btnStopRecording.style.display = "none";
-  });
-
-  meeting.on("presenter-changed", (presenterId) => {
-    if (presenterId) {
-      console.log(presenterId);
-      //videoScreenShare.style.display = "inline-block";
-    } else {
-      console.log(presenterId);
-      videoScreenShare.removeAttribute("src");
-      videoScreenShare.pause();
-      videoScreenShare.load();
-      videoScreenShare.style.display = "none";
-
-      btnScreenShare.style.color = "white";
-      screenShareOn = false;
-      console.log(`screen share on : ${screenShareOn}`);
-    }
   });
 
   //add DOM Events
