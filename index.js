@@ -340,9 +340,9 @@ function createVideoElement(pId) {
   videoElement.setAttribute("id", `v-${pId}`);
   videoElement.setAttribute("playsinline", true);
   //videoElement.setAttribute('height', '300');
-  videoElement.setAttribute("width", "300");
+  videoElement.setAttribute("width", "45%");
   division.appendChild(videoElement);
-  return videoElement;
+  return division;
 }
 
 // creating audio element
